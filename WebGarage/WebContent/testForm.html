@@ -1,0 +1,46 @@
+<html>
+	<head>
+		<style>
+		body {font-size:20px}
+		.bluetext {color:blue}
+		#onetofour {font-size:10px;color:red}
+		#testing {font-size:30px}
+		;
+		</style>
+	</head>
+	
+	<body style="background-color:#00ffff; font-family:'Arial'">
+		<div id='createDiv'>
+			<h1>Create New User</h1>
+			<form id="createUserForm" method="post" action="TestHandler"> <!-- Uses POST because un/pw combos are sensitive data! -->
+				Username: <input type="text" name="un"><br>
+				Password: <input type="password" name="pw"><br>
+				<!-- Confirm Password: <input type="password" name="pw2"><br> <!-- TODO -->
+				<input type="hidden" name="action" value="createUser">
+				<input type="submit" value="Create New User">
+			</form>
+		</div>
+		
+		<br><br>
+		
+		<div id='logInDiv'>
+			<h1>Log In</h1>
+			<form id="logInForm" method="post" action="TestHandler"> <!-- Uses POST because un/pw combos are sensitive data! -->
+				Username: <input type="text" name="un"><br>
+				Password: <input type="password" name="pw"><br>
+				<input type="hidden" name="action" value="logIn">
+				<input type="submit" value="Log In">
+			</form>
+		</div>
+		
+		<br><br>
+		
+		<div id='logOutDiv'>
+			<h1>Log Out</h1>
+			<form id="logOutForm" method="get" action="TestHandler"> <!-- Uses GET because s combos are sensitive data! -->
+				<input type="hidden" name="action" value="logOut">
+				<input type="submit" value="Log Out">
+			</form>
+		</div>
+	</body>
+</html>
