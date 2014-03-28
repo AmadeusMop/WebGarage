@@ -32,7 +32,7 @@ public class UserDBConnection {
 	
 	public Map<String, String> getUserMap() throws SQLException {
 		Map<String, String> userMap = new HashMap<String, String>();
-		Connection con = getConnection();
+		con = getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery(String.format(SELECT_TEMPLATE, USERS_TABLE));
 		while(rs.next()) {
@@ -54,6 +54,7 @@ public class UserDBConnection {
 	}
 	
 	private Connection getConnection() {
+		Connection con = null;
 		try {
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerConnection");
 			con = DriverManager.getConnection(getConnectionURL(), userName, password);
