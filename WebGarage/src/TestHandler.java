@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,15 +22,19 @@ public class TestHandler extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final String USERNAME_PARAM = "un";
 	private static final String PASSWORD_PARAM = "pw";
-	private Map<String, String> passwordMap = new HashMap<String, String>();
+	private Map<String, String> passwordMap;
 	private Map<Integer, String> sessionMap = new HashMap<Integer, String>();
 	int session = 0;
+	UserDBConnection connection;
        
     /**
+     * @throws SQLException 
      * @see HttpServlet#HttpServlet()
      */
-    public TestHandler() {
+    public TestHandler() throws SQLException {
         super();
+        connection = new UserDBConnection();
+        passwordMap = connection.getUserMap();
         // TODO Auto-generated constructor stub
     }
 
@@ -62,7 +67,12 @@ public class TestHandler extends HttpServlet {
 	    
 	    String requestType = request.getParameter("action");
 	    if(requestType.equals("createUser")) {
-	    	tryCreateUser(request, response, out);
+	    	try {
+				tryCreateUser(request, response, out);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	    } else if(sessionMap.containsKey(sessionID)) {
 			out.printf("User '%s' currently logged in", sessionMap.get(sessionID));
 	    } else if(requestType.equals("logIn")) {
@@ -72,13 +82,14 @@ public class TestHandler extends HttpServlet {
 	    }
 	}
 	
-	private void tryCreateUser(HttpServletRequest request, HttpServletResponse response, PrintWriter output) {
+	private void tryCreateUser(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException {
 		String un = request.getParameter(USERNAME_PARAM);
 		if(!un.equals("")) {
 			if(!passwordMap.containsKey(un)) {
-				String pw = request.getParameter(PASSWORD_PARAM);
+				String pw = hash(request.getParameter(PASSWORD_PARAM));
 				if(!pw.equals("")) {
-					passwordMap.put(un, pw);
+					connection.addNewUser(un, pw);
+					passwordMap = connection.getUserMap();
 					output.printf("User %s successfully created!\n", un);
 					tryLogIn(un, pw, response, output);
 				} else {
@@ -96,7 +107,7 @@ public class TestHandler extends HttpServlet {
 		String un = request.getParameter(USERNAME_PARAM);
 		if(!un.equals("")) {
 			if(passwordMap.containsKey(un)) {
-				String pw = request.getParameter(PASSWORD_PARAM);
+				String pw = hash(request.getParameter(PASSWORD_PARAM));
 				if(!pw.equals("")) {
 					if(passwordMap.get(un).equals(pw)) {
 						int sessionID = getNewSessionID(un);

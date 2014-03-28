@@ -33,21 +33,25 @@ public class UserDBConnection {
 	public Map<String, String> getUserMap() throws SQLException {
 		Map<String, String> userMap = new HashMap<String, String>();
 		Connection con = getConnection();
-		ResultSet rs = con.createStatement().executeQuery(String.format(SELECT_TEMPLATE, USERS_TABLE));
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery(String.format(SELECT_TEMPLATE, USERS_TABLE));
 		while(rs.next()) {
 			userMap.put(rs.getString(1), rs.getString(2));
 		}
 		rs.close();
+		stmt.close();
 		con.close();
 		return userMap;
 	}
 	
-	/*public void addNewUser(String un, String pw) throws SQLException {
+	public void addNewUser(String un, String pw) throws SQLException {
 		String query = String.format(INSERT_TEMPLATE, USERS_TABLE, String.format("%s, %s", un, pw), USERS_PARAMS);
 		Connection con = getConnection();
 		Statement stmt = con.createStatement();
 		stmt.execute(query);
-	}*/
+		stmt.close();
+		con.close();
+	}
 	
 	private Connection getConnection() {
 		try {
