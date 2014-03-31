@@ -7,63 +7,62 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+
 public class UserDBConnection {
 	private Connection con = null;
-	private final String url = "jdbc:sqlserver://";
 	private final String serverName = "fourwaylo.com";
 	private final String portNumber = "8889";
 	private final String databaseName = "csproj";
 	private final String userName = "csproj";
 	private final String password = "DoYourHomework";
 	
-	private final String selectMethod = "cursor";
-	
 	private static final String SELECT_TEMPLATE = "SELECT * FROM %s;";
 	private static final String INSERT_TEMPLATE = "INSERT INTO %s (%s) VALUES (%s);";
-	private static final String REMOVE_TEMPLATE = "REMOVE FROM %s WHERE ID=%d;";
+	private static final String REMOVE_TEMPLATE = "DELETE FROM %s WHERE ID=%d;";
 	private static final String USERS_TABLE = "cillian.Users";
 	private static final String USERS_PARAMS = "Username, Password";
 	
 	public UserDBConnection() {}
 	
-	private String getConnectionURL() {
-		return String.format("%s%s:%s;databaseName=%s;selectMethod=%s;", url, serverName, portNumber, databaseName, selectMethod);
-	}
-	
 	public Map<String, String> getUserMap() throws SQLException {
 		Map<String, String> userMap = new HashMap<String, String>();
-		con = getConnection();
+		getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery(String.format(SELECT_TEMPLATE, USERS_TABLE));
 		while(rs.next()) {
-			userMap.put(rs.getString(1), rs.getString(2));
+			userMap.put(rs.getString(1).trim(), rs.getString(2).trim());
 		}
 		rs.close();
 		stmt.close();
-		con.close();
+		closeConnection();
 		return userMap;
 	}
 	
 	public void addNewUser(String un, String pw) throws SQLException {
-		String query = String.format(INSERT_TEMPLATE, USERS_TABLE, String.format("%s, %s", un, pw), USERS_PARAMS);
-		Connection con = getConnection();
+		String query = String.format(INSERT_TEMPLATE, USERS_TABLE, USERS_PARAMS, String.format("'%s', '%s'", un, pw));
+		getConnection();
 		Statement stmt = con.createStatement();
 		stmt.execute(query);
 		stmt.close();
-		con.close();
+		closeConnection();
 	}
 	
-	private Connection getConnection() {
-		Connection con = null;
+	private void getConnection() {
+		SQLServerDataSource ds = new SQLServerDataSource();
+	    ds.setUser(userName);
+	    ds.setPassword(password);
+	    ds.setServerName(serverName);
+	    ds.setPortNumber(Integer.parseInt(portNumber));
+	    ds.setDatabaseName(databaseName);
+		Connection localCon = null;
 		try {
-			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerConnection");
-			con = DriverManager.getConnection(getConnectionURL(), userName, password);
-			if(con != null) System.out.println("Connection Successful!");
+			localCon = ds.getConnection();
 		} catch(Exception e) {
 			e.printStackTrace();
 			System.out.println("Error Trace in getConnection(): " + e.getMessage());
 		}
-		return con;
+		this.con = localCon;
 	}
 	
 	public static String repeatString(String s, int n) {

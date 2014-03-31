@@ -66,37 +66,41 @@ public class TestHandler extends HttpServlet {
 	    int sessionID = getSessionID(request.getCookies());
 	    
 	    String requestType = request.getParameter("action");
-	    if(requestType.equals("createUser")) {
+	    if(sessionMap.containsKey(sessionID)) {
+			out.printf("Error: User '%s' is currently logged in.", sessionMap.get(sessionID));
+	    } else if(requestType.equals("createUser")) {
 	    	try {
 				tryCreateUser(request, response, out);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	    } else if(sessionMap.containsKey(sessionID)) {
-			out.printf("User '%s' currently logged in", sessionMap.get(sessionID));
 	    } else if(requestType.equals("logIn")) {
 	    	tryLogIn(request, response, out);
 	    } else {
-	    	out.printf("Error: Request type '%s' not valid", requestType);
+	    	out.printf("Error: Request type '%s' not valid.", requestType);
 	    }
 	}
 	
 	private void tryCreateUser(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException {
 		String un = request.getParameter(USERNAME_PARAM);
 		if(!un.equals("")) {
-			if(!passwordMap.containsKey(un)) {
-				String pw = hash(request.getParameter(PASSWORD_PARAM));
-				if(!pw.equals("")) {
-					connection.addNewUser(un, pw);
-					passwordMap = connection.getUserMap();
-					output.printf("User %s successfully created!\n", un);
-					tryLogIn(un, pw, response, output);
-				} else {
-					output.println("Error: No password entered.");
+			if(!un.contains(" ")) {
+				if(!passwordMap.containsKey(un)) {
+					String pw = hash(request.getParameter(PASSWORD_PARAM));
+					if(!pw.equals("")) {
+						connection.addNewUser(un, pw);
+						passwordMap = connection.getUserMap();
+						output.printf("User %s successfully created!\n", un);
+						tryLogIn(request, response, output);
+					} else {
+						output.println("Error: No password entered.");
+					}
+				}  else {
+					output.printf("Error: User '%s' already exists.\n", un);
 				}
-			}  else {
-				output.printf("Error: User '%s' already exists.\n", un);
+			} else {
+				output.printf("Error: User name may not contain spaces.");
 			}
 		} else {
 			output.println("Error: No username entered.");
@@ -124,17 +128,6 @@ public class TestHandler extends HttpServlet {
 			}
 		} else {
 			output.println("Error: No username entered.");
-		}
-	}
-	
-	private void tryLogIn(String un, String pw, HttpServletResponse response, PrintWriter output) {
-		if(passwordMap.containsKey(un)) {
-			if(passwordMap.get(un).equals(pw)) {
-			} else {
-				output.printf("Error: Invalid password for user %s.", un);
-			}
-		} else {
-			output.printf("Error: User '%s' does not yet exist.", un);
 		}
 	}
 	
