@@ -39,6 +39,20 @@ public class UserDBConnection {
 		return userMap;
 	}
 	
+	public Map<String, String> getSessionMap() throws SQLException {
+		Map<String, String> sessionMap = new HashMap<String, String>();
+		getConnection();
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery(String.format(SELECT_TEMPLATE, USERS_TABLE));
+		while(rs.next()) {
+			sessionMap.put(rs.getString(3).trim(), rs.getString(1).trim());
+		}
+		rs.close();
+		stmt.close();
+		closeConnection();
+		return sessionMap;
+	}
+	
 	public void addNewUser(String un, String pw) throws SQLException {
 		String query = String.format(INSERT_TEMPLATE, USERS_TABLE, USERS_PARAMS, String.format("'%s', '%s'", un, pw));
 		getConnection();
