@@ -20,6 +20,10 @@ public class PageBuilder {
 	}
 	
 	public void addTag(String element, String content, boolean hasClosingTag, String...attributes) {
+		body.append(createTag(element, content, hasClosingTag, attributes));
+	}
+	
+	public String createTag(String element, String content, boolean hasClosingTag, String...attributes) {
 		if(attributes.length % 2 != 0) throw new IllegalArgumentException();
 		StringBuilder tag = new StringBuilder();
 		StringBuilder attrs = new StringBuilder();
@@ -33,11 +37,12 @@ public class PageBuilder {
 				element,
 				attrs.toString(),
 				content,
-				element
+				element,
+				"\n"
 			)
 		);
 		
-		body.append(tag.toString());
+		return tag.toString();
 	}
 	
 	public String toString() {

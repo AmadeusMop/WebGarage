@@ -24,7 +24,6 @@ public class TestHandler extends HttpServlet {
 	private static final String PASSWORD_PARAM = "pw";
 	private Map<String, String> passwordMap;
 	private Map<Integer, String> sessionMap = new HashMap<Integer, String>();
-	int session = 0;
 	UserDBConnection connection;
        
     /**
@@ -42,13 +41,6 @@ public class TestHandler extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    int sessionID = getSessionID(request.getCookies());
-	    String requestType = request.getParameter("action");
-	    if(requestType == null) {
-	    	
-	    } else if(requestType.equals("logOut")) {
-	    	tryLogOut(sessionID);
-	    }
 	    response.sendRedirect("testForm.html");
 	}
 
@@ -76,7 +68,12 @@ public class TestHandler extends HttpServlet {
 				e.printStackTrace();
 			}
 	    } else if(requestType.equals("logIn")) {
-	    	tryLogIn(request, response, out);
+	    	try {
+				tryLogIn(request, response, out);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	    } else {
 	    	out.printf("Error: Request type '%s' not valid.", requestType);
 	    }
@@ -107,14 +104,14 @@ public class TestHandler extends HttpServlet {
 		}
 	}
 	
-	private void tryLogIn(HttpServletRequest request, HttpServletResponse response, PrintWriter output) {
+	private void tryLogIn(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException {
 		String un = request.getParameter(USERNAME_PARAM);
 		if(!un.equals("")) {
 			if(passwordMap.containsKey(un)) {
 				String pw = hash(request.getParameter(PASSWORD_PARAM));
 				if(!pw.equals("")) {
 					if(passwordMap.get(un).equals(pw)) {
-						int sessionID = getNewSessionID(un);
+						int sessionID = connection.createNewSession(un);
 						response.addCookie(getNewSessionCookie(sessionID));
 						output.printf("User %s successfully logged in!\n", un);
 					} else {
@@ -131,10 +128,6 @@ public class TestHandler extends HttpServlet {
 		}
 	}
 	
-	private void tryLogOut(int id) {
-		sessionMap.remove(id);
-	}
-	
 	private int getSessionID(Cookie[] cookies) {
 		if(cookies != null) {
 			for(Cookie cookie : cookies) {
@@ -144,16 +137,6 @@ public class TestHandler extends HttpServlet {
 			}
 		}
 		return 0;
-	}
-	
-	private boolean sessionValid() {
-		return false;
-	}
-	
-	private int getNewSessionID(String un) {
-		session++;
-		sessionMap.put(session, un);
-		return session;
 	}
 	
 	private Cookie getNewSessionCookie(int sessionID) {

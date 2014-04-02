@@ -12,7 +12,7 @@
 	<body style="background-color:#00ffff; font-family:'Arial'">
 		<div id='createDiv'>
 			<h1>Create New User</h1>
-			<form id="createUserForm" method="post" action="TestHandler"> <!-- Uses POST because un/pw combos are sensitive data! -->
+			<form id="createUserForm" method="post" action="TestHandler"> <!-- Uses POST because un/pw combos are sensitive data -->
 				Username: <input type="text" name="un"><br>
 				Password: <input type="password" name="pw"><br>
 				<!-- Confirm Password: <input type="password" name="pw2"><br> <!-- TODO -->
@@ -25,7 +25,7 @@
 		
 		<div id='logInDiv'>
 			<h1>Log In</h1>
-			<form id="logInForm" method="post" action="TestHandler"> <!-- Uses POST because un/pw combos are sensitive data! -->
+			<form id="logInForm" method="post" action="TestHandler"> <!-- Uses POST because un/pw combos are sensitive data -->
 				Username: <input type="text" name="un"><br>
 				Password: <input type="password" name="pw"><br>
 				<input type="hidden" name="action" value="logIn">
@@ -37,7 +37,7 @@
 		
 		<div id='logOutDiv'>
 			<h1>Log Out</h1>
-			<form id="logOutForm" method="get" action="TestHandler"> <!-- Uses GET because s combos are sensitive data! -->
+			<form id="logOutForm" method="get" action="TestHandler"> <!-- Uses GET because a logout button is not sensitive data -->
 				<input type="hidden" name="action" value="logOut">
 				<input type="submit" value="Log Out">
 			</form>

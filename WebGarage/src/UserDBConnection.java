@@ -1,11 +1,11 @@
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 
@@ -20,6 +20,8 @@ public class UserDBConnection {
 	private static final String SELECT_TEMPLATE = "SELECT * FROM %s;";
 	private static final String INSERT_TEMPLATE = "INSERT INTO %s (%s) VALUES (%s);";
 	private static final String REMOVE_TEMPLATE = "DELETE FROM %s WHERE ID=%d;";
+	private static final String UPDATE_TEMPLATE = "UPDATE %s SET %s WHERE %s;";
+	
 	private static final String USERS_TABLE = "cillian.Users";
 	private static final String USERS_PARAMS = "Username, Password";
 	
@@ -39,13 +41,13 @@ public class UserDBConnection {
 		return userMap;
 	}
 	
-	public Map<String, String> getSessionMap() throws SQLException {
-		Map<String, String> sessionMap = new HashMap<String, String>();
+	public Map<Integer, String> getSessionMap() throws SQLException {
+		Map<Integer, String> sessionMap = new HashMap<Integer, String>();
 		getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery(String.format(SELECT_TEMPLATE, USERS_TABLE));
 		while(rs.next()) {
-			sessionMap.put(rs.getString(3).trim(), rs.getString(1).trim());
+			sessionMap.put(rs.getInt(3), rs.getString(1).trim());
 		}
 		rs.close();
 		stmt.close();
@@ -60,6 +62,17 @@ public class UserDBConnection {
 		stmt.execute(query);
 		stmt.close();
 		closeConnection();
+	}
+	
+	public int createNewSession(String un) throws SQLException {
+		int sessionID = new Random().nextInt(9);
+		String query = String.format(UPDATE_TEMPLATE, USERS_TABLE, String.format("SessionID=%d", sessionID), String.format("Username='%s'", un));
+		getConnection();
+		Statement stmt = con.createStatement();
+		stmt.execute(query);
+		stmt.close();
+		closeConnection();
+		return sessionID;
 	}
 	
 	private void getConnection() {
