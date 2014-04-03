@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 /**
  * Servlet implementation class SecureArea
  */
@@ -37,28 +38,38 @@ public class SecureArea extends HttpServlet {
 		if(!sessionValid()) {
 			response.sendRedirect("TestHandler");
 		} else {
-			response.setContentType("text/html");
+			response.setContentType("text/plain");
 			
 			PageBuilder pb = new PageBuilder();
 			
-			pb.addTag("h2", String.format("User %s is currently logged in.", getUser()), true);
-			pb.addTag("br", "", false);
-			
-			String form = "";
-			form += pb.createTag("hidden", "", false, "name", "action", "value", "logOut");
-			form += pb.createTag("submit", "", false, "action", "Log Out");
-			form = "\n" + form;
-			form = pb.createTag("form", form, true, "id", "logOutForm", "method", "get", "action", "SecureArea");
-			form = pb.createTag("h1", "Log Out", true) + form;
-			form += "\n";
-			pb.addTag("div", form, true, "id", "logOutDiv");
+			pb.getBody().addTags(
+				pb.createTag("h2").setContent(String.format("User %s is currently logged in.", getUser())),
+				pb.createTag("br", false),
+				pb.createTag("div").setAttributes("id", "logOutDiv").setSubTags(
+					pb.createTag("form").setAttributes("id", "logOutForm", "method", "get", "action", "SecureArea").setSubTags(
+							pb.createTag("input").setAttributes("type", "hidden", "name", "action", "value", "logOut"),
+							pb.createTag("input").setAttributes("type", "submit", "action", "Log Out"),
+							pb.createTag("h1").setContent("Log Out"),
+							pb.createTag("br", false)
+					)
+				)
+			);
 			
 			response.getWriter().println(pb.toString());
 		}
+		
+		request = null;
+		response = null;
 	}
 
 	protected void doPost(HttpServletRequest requestParam, HttpServletResponse responseParam) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		request = requestParam;
+		response = responseParam;
+		
+		response.sendRedirect("TestHandler");
+		
+		request = null;
+		response = null;
 	}
 	
 	private boolean sessionValid() {
@@ -78,6 +89,7 @@ public class SecureArea extends HttpServlet {
 		if(request == null) throw new IllegalStateException();
 		
 		Cookie[] cookies = request.getCookies();
+		if(cookies == null) return -1;
 		for(Cookie cookie : cookies) {
 			if(cookie.getName().equals("sessionID")) {
 				return Integer.parseInt(cookie.getValue());

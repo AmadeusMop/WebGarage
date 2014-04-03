@@ -79,7 +79,7 @@ public class TestHandler extends HttpServlet {
 	    }
 	}
 	
-	private void tryCreateUser(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException {
+	private void tryCreateUser(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException, IOException {
 		String un = request.getParameter(USERNAME_PARAM);
 		if(!un.equals("")) {
 			if(!un.contains(" ")) {
@@ -104,7 +104,7 @@ public class TestHandler extends HttpServlet {
 		}
 	}
 	
-	private void tryLogIn(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException {
+	private void tryLogIn(HttpServletRequest request, HttpServletResponse response, PrintWriter output) throws SQLException, IOException {
 		String un = request.getParameter(USERNAME_PARAM);
 		if(!un.equals("")) {
 			if(passwordMap.containsKey(un)) {
@@ -113,7 +113,7 @@ public class TestHandler extends HttpServlet {
 					if(passwordMap.get(un).equals(pw)) {
 						int sessionID = connection.createNewSession(un);
 						response.addCookie(getNewSessionCookie(sessionID));
-						output.printf("User %s successfully logged in!\n", un);
+						response.sendRedirect("SecureArea");
 					} else {
 						output.printf("Error: Invalid password for user %s.\n", un);
 					}
